@@ -10,7 +10,7 @@ wheels/
 .venv
 
 # Datasets and data files
-data/
+data/.
 *.csv
 *.xlsx
 *.parquet
