@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Datasets and data files
+data/
+*.csv
+*.xlsx
+*.parquet
+
+
+# Jupyter Notebook 
+.ipynb_checkpoints/
+
+notebooks/01_model_training.ipynb
