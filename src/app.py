@@ -18,8 +18,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 def load_resources():
     model = xgb.XGBClassifier()
     model.load_model(BASE_DIR / "xgb_model.json")
-    df_processed = pd.read_parquet(BASE_DIR / "data/creditcard_processed.parquet")
-    df_orig = pd.read_csv(BASE_DIR / "data/creditcard.csv")
+    df_processed = pd.read_parquet(BASE_DIR / "demo_data/creditcard_processed_demo.parquet")
+    df_orig = pd.read_csv(BASE_DIR / "demo_data/creditcard_demo.csv")
     
     # ПРАВИЛЬНАЯ ВАЛИДАЦИЯ: Берем только отложенную ТЕСТОВУЮ выборку
     X = df_processed.drop('Class', axis=1)

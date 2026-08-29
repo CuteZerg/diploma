@@ -10,10 +10,8 @@ wheels/
 .venv
 
 # Datasets and data files
-data/.
-*.csv
-*.xlsx
-*.parquet
+data/
+
 
 
 # Jupyter Notebook 
