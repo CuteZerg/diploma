@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.express as px
 from pathlib import Path
-from sklearn.model_selection import train_test_split
 
 # --- НАСТРОЙКИ СТРАНИЦЫ ---
 st.set_page_config(page_title="Anti-Fraud System", layout="wide")
@@ -18,21 +17,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 def load_resources():
     model = xgb.XGBClassifier()
     model.load_model(BASE_DIR / "xgb_model.json")
-    df_processed = pd.read_parquet(BASE_DIR / "demo_data/creditcard_processed_demo.parquet")
-    df_orig = pd.read_csv(BASE_DIR / "demo_data/creditcard_demo.csv")
     
-    # ПРАВИЛЬНАЯ ВАЛИДАЦИЯ: Берем только отложенную ТЕСТОВУЮ выборку
-    X = df_processed.drop('Class', axis=1)
-    y = df_processed['Class'].values
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    # Загружаем ТОЛЬКО правильную тестовую выборку (56 962 строки)
+    df_processed = pd.read_parquet(BASE_DIR / "demo_data/creditcard_processed_test.parquet")
+    df_orig = pd.read_csv(BASE_DIR / "demo_data/creditcard_test.csv")
     
-    # Достаем суммы именно для тестовой выборки
-    amounts_test = df_orig.loc[X_test.index, 'Amount'].values
+    X_eval = df_processed.drop('Class', axis=1)
+    y_eval = df_processed['Class'].values
+    amounts_eval = df_orig['Amount'].values
     
     # Предрассчитываем вероятности для экономики на тесте
-    probs_test = model.predict_proba(X_test)[:, 1]
+    probs_eval = model.predict_proba(X_eval)[:, 1]
     
-    return model, df_processed, df_orig, y_test, probs_test, amounts_test
+    return model, df_processed, df_orig, y_eval, probs_eval, amounts_eval
 
 model, df_processed, df_orig, y_eval, probs_eval, amounts_eval = load_resources()
 
@@ -122,7 +119,7 @@ with tab1:
     # Линия БИЗНЕС оптимума
     fig_econ.add_vline(x=best_biz_thr, line_width=2, line_dash="dash", line_color="green", annotation_text=f"Бизнес-оптимум ({best_biz_thr:.2f})")
     
-    st.plotly_chart(fig_econ, width="stretch")
+    st.plotly_chart(fig_econ, use_container_width=True)
 
 # ==========================================
 # ВКЛАДКА 2: СИМУЛЯТОР (WHAT-IF)
@@ -181,9 +178,9 @@ with tab2:
             }
         ))
         fig_gauge.update_layout(height=280, margin=dict(l=40, r=40, t=50, b=20))
-        st.plotly_chart(fig_gauge, width="stretch")
+        st.plotly_chart(fig_gauge, use_container_width=True)
         
-        st.markdown("**Объяснение решения (SHAP):** Почему модель выдала такую оценку?")
+        st.markdown("**Объяснение решения (SHAP):** Почему модель выдала такой Risk Score?")
         explainer = shap.Explainer(model)
         shap_values = explainer(current_tx)
         
@@ -208,10 +205,10 @@ with tab3:
             names=class_counts.index, 
             hole=0.5, 
             color_discrete_sequence=['#636EFA', '#EF553B'],
-            title="Экстремальный дисбаланс классов"
+            title="Дисбаланс классов (тестовая выборка)"
         )
         fig_pie.update_layout(height=400, margin=dict(t=50, b=20, l=20, r=20))
-        st.plotly_chart(fig_pie, width="stretch")
+        st.plotly_chart(fig_pie, use_container_width=True)
         
     with c2:
         fig_box = px.box(
@@ -224,4 +221,4 @@ with tab3:
             title="Распределение сумм (Логарифмическая шкала)"
         )
         fig_box.update_layout(height=400, margin=dict(t=50, b=20, l=20, r=20))
-        st.plotly_chart(fig_box, width="stretch")
+        st.plotly_chart(fig_box, use_container_width=True)
